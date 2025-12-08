@@ -7,7 +7,6 @@ function onOpen() {
 }
 
 
-
 function fillAverageFormulaForSelectedColumn() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const range = sheet.getActiveCell();
@@ -18,31 +17,16 @@ function fillAverageFormulaForSelectedColumn() {
     return;
   }
 
-  // Determine last row with a name in Column A
-  const colAValues = sheet.getRange("A:A").getValues();
-  let lastNameRow = 0;
-  for (let i = 0; i < colAValues.length; i++) {
-    if (colAValues[i][0] !== "") lastNameRow = i + 1; // +1 because array is 0-indexed
-  }
-
-  if (lastNameRow < 2) {
-    SpreadsheetApp.getUi().alert("No names found in Column A.");
-    return;
-  }
-
-  // Range of names
-  const names = sheet.getRange(2, 1, lastNameRow - 1, 1).getValues();
-
-  // Optimized formula for top 2 average
-  const formulaTemplate = '=IF(COUNTA(%range%)=0,"",IFERROR(AVERAGE(LARGE(%range%,{1,2})),MAX(%range%)))';
+  const lastRow = sheet.getLastRow();
+  const names = sheet.getRange(2, 1, lastRow - 1, 1).getValues(); // Column A names
+  const formulaTemplate = '=IF(COUNTA(%range%)=0, "", IFERROR(AVERAGE(LARGE(FILTER(%range%,%range%<>""),1), LARGE(FILTER(%range%,%range%<>""),2)), MAX(%range%)))';
 
   // Determine 4-column range immediately to the left
   const startCol = targetCol - 4;
 
-  // Fill formulas for each row with a name
   for (let i = 0; i < names.length; i++) {
-    const row = i + 2; // offset for header
-    if (names[i][0]) {
+    const row = i + 2;
+    if (names[i][0]) { // only fill if Column A has a name
       const rangeA1 = sheet.getRange(row, startCol, 1, 4).getA1Notation();
       const formula = formulaTemplate.replace(/%range%/g, rangeA1);
       sheet.getRange(row, targetCol).setFormula(formula);
@@ -51,7 +35,6 @@ function fillAverageFormulaForSelectedColumn() {
 
   SpreadsheetApp.getUi().alert("Formulas filled successfully!");
 }
-
 
 function updateScoresFromSourceSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -111,4 +94,3 @@ function updateScoresFromSourceSheet() {
 
   ui.alert("Scores updated from " + sourceSheetName + "!");
 }
-
