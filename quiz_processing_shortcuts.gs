@@ -65,11 +65,6 @@ function _storePromptValue(v) {
 }
 
 
-/* ============================================================
-   SELECT COLUMNS DOWNWARD PAST FILTER TO LAST VISIBLE ROW
-   ============================================================ */
-
-
 
 /* ============================================================
    FILL AVERAGE FORMULA FOR SELECTED COLUMN
