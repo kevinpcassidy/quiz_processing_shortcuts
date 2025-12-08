@@ -19,7 +19,7 @@ function fillAverageFormulaForSelectedColumn() {
 
   const lastRow = sheet.getLastRow();
   const names = sheet.getRange(2, 1, lastRow - 1, 1).getValues(); // Column A names
-  const formulaTemplate = '=IF(COUNTA(%range%)=0, "", IFERROR(AVERAGE(LARGE(FILTER(%range%,%range%<>""),1), LARGE(FILTER(%range%,%range%<>""),2)), MAX(%range%)))';
+  const formulaTemplate = '=IF(COUNTA(%range%)=0,"",IFERROR(AVERAGE(LARGE(%range%,{1}),LARGE(%range%,{2})),MAX(%range%)))';
 
   // Determine 4-column range immediately to the left
   const startCol = targetCol - 4;
