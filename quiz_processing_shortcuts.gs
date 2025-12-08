@@ -67,7 +67,7 @@ function updateScoresFromSourceSheet() {
   const sourceData = sourceSheet.getRange(2, 1, sourceSheet.getLastRow() - 1, sourceSheet.getLastColumn()).getValues();
   const sourceNames = sourceSheet.getRange(2, 1, sourceSheet.getLastRow() - 1, 1).getValues().map(r => r[0]);
 
-  // Get target headers and names
+  // Get target headers
   const targetHeaders = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
   const targetNames = targetSheet.getRange(2, 1, targetSheet.getLastRow() - 1, 1).getValues().map(r => r[0]);
 
@@ -77,19 +77,28 @@ function updateScoresFromSourceSheet() {
     sourceMap[sourceNames[i]] = sourceData[i];
   }
 
-  // Loop through each target column
-  for (let tCol = 1; tCol <= targetHeaders.length; tCol++) {
-    const header = targetHeaders[tCol - 1];
+  // Update only matching columns (one column at a time to preserve formulas)
+  for (let tCol = 0; tCol < targetHeaders.length; tCol++) {
+    const header = targetHeaders[tCol];
     const sCol = sourceHeaders.indexOf(header);
-    if (sCol === -1) continue; // skip if header not found in source
+    
+    if (sCol === -1) continue; // Skip columns not in source (like your formula columns)
 
-    // Loop through each student
+    // Build array of values for this column only
+    const colValues = [];
     for (let row = 0; row < targetNames.length; row++) {
       const studentName = targetNames[row];
       if (sourceMap[studentName] && sourceMap[studentName][sCol] !== "") {
-        targetSheet.getRange(row + 2, tCol).setValue(sourceMap[studentName][sCol]);
+        colValues.push([sourceMap[studentName][sCol]]);
+      } else {
+        // Keep existing value if no update available
+        const existingValue = targetSheet.getRange(row + 2, tCol + 1).getValue();
+        colValues.push([existingValue]);
       }
     }
+    
+    // Write this column's values
+    targetSheet.getRange(2, tCol + 1, colValues.length, 1).setValues(colValues);
   }
 
   ui.alert("Scores updated from " + sourceSheetName + "!");
